@@ -20,5 +20,5 @@ fn eval() {
     assert_eq!(eval("(- (+ 5 (* 2 3)) 3)"), "8");
     assert_eq!(eval("(/ (- (+ 5 (* 2 3)) 3) 4)"), "2");
     assert_eq!(eval("(/ (- (+ 515 (* 222 311)) 302) 27)"), "2565");
-    assert_eq!(eval("(abc 1 2 3)"), "UndefinedSymbol");
+    assert_eq!(eval("(abc 1 2 3)"), "UndefinedSymbol(\"abc\")");
 }
