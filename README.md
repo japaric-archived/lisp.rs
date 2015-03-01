@@ -6,13 +6,17 @@ A lisp interpreter written in rust. See [Make-A-Lisp].
 
 [Make-A-Lisp]: https://github.com/kanaka/mal
 
-Status: step 1 completed
+Status: step 2 completed
 
 ```
 $ cargo build --release
-$ target/release/stage1
->   ( +   1   (+   2 3   )   )  
-(+ 1 (+ 2 3))
+$ target/release/stage2
+> (+ 1 2)
+3
+> (+ 5 (* 2 3))
+11
+> (abc 1 2)
+error: UndefinedSymbol("abc")
 ```
 
 # [Documentation][docs]
