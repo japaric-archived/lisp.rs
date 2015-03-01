@@ -1,0 +1,9 @@
+[package]
+
+authors = ["Jorge Aparicio <japaricious@gmail.com>"]
+name = "lisp"
+version = "0.0.0"
+
+[dependencies]
+env_logger = "*"
+log = "*"
