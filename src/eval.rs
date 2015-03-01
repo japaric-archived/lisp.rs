@@ -13,7 +13,7 @@ pub enum Error {
     /// `("abc" 1 2)`
     ExpectedSymbolGot(Expr),
     /// Symbol not yet defined
-    UndefinedSymbol,
+    UndefinedSymbol(String),
     /// `(+ 1)`
     UnsupportedOperation,
 }
@@ -46,7 +46,7 @@ pub fn expr(e: &Expr, env: &Env) -> Result<Value, Error> {
             [] => Err(Error::EmptyList),
             [ref sym, exprs..] => match *sym {
                 Expr::Symbol(ref sym) => match env.get(sym) {
-                    None => Err(Error::UndefinedSymbol),
+                    None => Err(Error::UndefinedSymbol(sym.clone())),
                     Some(f) => {
                         let mut args = Vec::with_capacity(exprs.len());
 
