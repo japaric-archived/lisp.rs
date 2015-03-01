@@ -40,7 +40,10 @@ fn lists() {
     assert_eq!(parse::expr("(+ 1 2)").unwrap().to_string(), "(+ 1 2)");
     assert_eq!(parse::expr("((3 4))").unwrap().to_string(), "((3 4))");
     assert_eq!(parse::expr("(+ 1 (+ 2 3))").unwrap().to_string(), "(+ 1 (+ 2 3))");
-    assert_eq!(parse::expr("  ( +   1   (+   2 3   )   )  ").unwrap().to_string(), "(+ 1 (+ 2 3))");
+    assert_eq!{
+        parse::expr("  ( +   1   (+   2 3   )   )  ").unwrap().to_string(),
+        "(+ 1 (+ 2 3))"
+    };
     assert_eq!(parse::expr("(* 1 2)").unwrap().to_string(), "(* 1 2)");
     // FIXME more allowed symbols?
     //assert_eq!(parse::expr("(** 1 2)").unwrap().to_string(), "(** 1 2)");

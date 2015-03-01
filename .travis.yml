@@ -1,0 +1,17 @@
+language: rust
+sudo: false
+
+env:
+  global:
+    - secure: K8CyGGcJfcd25PooRmrJ4KDx9065y9U0BHHGyxhdhK+yCNc4mDkgqCiV/FyFnmSP8LrfNHi4n8NAxTTZckbZDdjqeMD0Uv/Nb0vwd3IoMTA8Ba1rcW7fFefaww3nCPfddVutQQczwrWQi2XaJO3kE2KOEW8XjaMy/H6sc+S/BPI=
+script:
+  - cargo build --verbose
+  - cargo test --verbose
+  - cargo doc --verbose
+  - ./check-line-length.sh
+
+after_success:
+  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && bash upload-docs.sh'
+
+branches:
+  only: master
