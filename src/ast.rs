@@ -2,29 +2,24 @@
 
 use std::fmt;
 
-use parse::lexer;
-
 /// An expression
 #[derive(Debug)]
-pub enum Expr<'a> {
-    /// Identifier: `foo`
-    Ident(&'a str),
+pub enum Expr {
     /// Integer: `123`
     Integer(u64),
     /// List: `(+ 1 2)`
-    List(Box<[Expr<'a>]>),
+    List(Box<[Expr]>),
     /// `()`
     Nil,
     /// String: `"Hello, world!"`
-    String(&'a str),
+    String(String),
     /// Symbol: `+`
-    Symbol(lexer::Symbol),
+    Symbol(String),
 }
 
-impl<'a> fmt::Display for Expr<'a> {
+impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Expr::Ident(s) => f.write_str(s),
             Expr::Integer(int) => write!(f, "{}", int),
             Expr::List(ref exprs) => {
                 let mut is_first = true;
@@ -43,8 +38,8 @@ impl<'a> fmt::Display for Expr<'a> {
                 f.write_str(")")
             },
             Expr::Nil => f.write_str("nil"),
-            Expr::String(s) => write!(f, "\"{}\"", s),
-            Expr::Symbol(s) => s.fmt(f),
+            Expr::String(ref s) => write!(f, "\"{}\"", s),
+            Expr::Symbol(ref s) => s.fmt(f),
         }
     }
 }

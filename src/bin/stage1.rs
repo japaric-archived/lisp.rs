@@ -7,7 +7,7 @@ use std::old_io::stdio;
 use lisp::ast::Expr;
 use lisp::parse::{Error, self};
 
-fn read<'a>(input: &'a str) -> Result<Expr<'a>, Error<'a>> {
+fn read<'a>(input: &'a str) -> Result<Expr, Error<'a>> {
     parse::expr(input)
 }
 

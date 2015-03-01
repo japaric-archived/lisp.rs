@@ -91,10 +91,6 @@ impl<'a> Iterator for Lexer<'a> {
                 },
                 '(' => Ok(Token::OpenDelim(Delim::Paren)),
                 ')' => Ok(Token::CloseDelim(Delim::Paren)),
-                '*' => Ok(Token::Symbol(Symbol::Star)),
-                '+' => Ok(Token::Symbol(Symbol::Plus)),
-                '-' => Ok(Token::Symbol(Symbol::Minus)),
-                '/' => Ok(Token::Symbol(Symbol::Slash)),
                 '[' => Ok(Token::OpenDelim(Delim::Bracket)),
                 ']' => Ok(Token::CloseDelim(Delim::Bracket)),
                 c if c.is_digit(10) => {
@@ -105,9 +101,9 @@ impl<'a> Iterator for Lexer<'a> {
                         Ok(int) => Ok(Token::Literal(Literal::Integer(int))),
                     }
                 },
-                c if is_ident_start(c) => {
-                    let span = self.advance_while(ident_continue);
-                    Ok(Token::Ident(self.slice(span)))
+                c if is_symbol_start(c) => {
+                    let span = self.advance_while(symbol_continue);
+                    Ok(Token::Symbol(self.slice(span)))
                 },
                 c if is_whitespace(c) => {
                     self.advance_while(is_whitespace);
@@ -198,28 +194,26 @@ pub enum Token<'a> {
     CloseDelim(Delim),
     /// End of file
     Eof,
-    /// Identifier
-    Ident(&'a str),
     /// Literal
     Literal(Literal<'a>),
     /// An opening delimiter
     OpenDelim(Delim),
     /// A symbol: `+`, `*`, etc
-    Symbol(Symbol),
+    Symbol(&'a str),
     /// Whitespace: spaces, tabs, newlines, etc
     Whitespace,
 }
 
-fn ident_continue(c: char) -> bool {
+fn symbol_continue(c: char) -> bool {
     match c {
-        '0' ... '9' | 'A' ... 'Z' | '_' |  'a' ... 'z' | '-' => true,
+        '0' ... '9' | 'A' ... 'Z' | '_' |  'a' ... 'z' | '-' | '+' | '*' | '/' => true,
         _ => false,
     }
 }
 
-fn is_ident_start(c: char) -> bool {
+fn is_symbol_start(c: char) -> bool {
     match c {
-        'A' ... 'Z' | '_' | 'a' ... 'z' => true,
+        'A' ... 'Z' | '_' | 'a' ... 'z' | '-' | '+' | '*' | '/' => true,
         _ => false,
     }
 }

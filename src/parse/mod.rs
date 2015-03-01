@@ -59,11 +59,10 @@ impl<'a> Parser<'a> {
     }
 
     /// Parses an expression
-    pub fn parse_expr(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    pub fn parse_expr(&mut self) -> Result<Expr, Error<'a>> {
         match self.token {
             Token::CloseDelim(delim) => Err(Error::Unmatched(delim)),
             Token::Eof => Ok(Expr::Nil),
-            Token::Ident(_) => Ok(self.parse_ident()),
             Token::Literal(_) => Ok(self.parse_lit()),
             Token::OpenDelim(Delim::Paren) => self.parse_list(),
             Token::Symbol(_) => Ok(self.parse_sym()),
@@ -71,27 +70,19 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Parses current token as an ident
-    fn parse_ident(&self) -> Expr<'a> {
-        match self.token {
-            Token::Ident(ident) => Expr::Ident(ident),
-            _ => unreachable!(),
-        }
-    }
-
     /// Parses current token as a literal
-    fn parse_lit(&self) -> Expr<'a> {
+    fn parse_lit(&self) -> Expr {
         match self.token {
             Token::Literal(lit) => match lit {
                 Literal::Integer(int) => Expr::Integer(int),
-                Literal::String(str) => Expr::String(str),
+                Literal::String(s) => Expr::String(s.to_string()),
             },
             _ => unreachable!(),
         }
     }
 
     /// Parse a list, current token is `(`
-    fn parse_list(&mut self) -> Result<Expr<'a>, Error<'a>> {
+    fn parse_list(&mut self) -> Result<Expr, Error<'a>> {
         let mut exprs = vec![];
 
         loop {
@@ -100,7 +91,6 @@ impl<'a> Parser<'a> {
             match self.token {
                 Token::CloseDelim(Delim::Paren) => return Ok(Expr::List(exprs.into_boxed_slice())),
                 Token::Eof => return Err(Error::Unmatched(Delim::Paren)),
-                Token::Ident(_) => exprs.push(self.parse_ident()),
                 Token::Literal(_) => exprs.push(self.parse_lit()),
                 Token::OpenDelim(Delim::Paren) => exprs.push(try!(self.parse_list())),
                 Token::Symbol(_) => exprs.push(self.parse_sym()),
@@ -111,9 +101,9 @@ impl<'a> Parser<'a> {
     }
 
     /// Parses current token as a symbol
-    fn parse_sym(&self) -> Expr<'a> {
+    fn parse_sym(&self) -> Expr {
         match self.token {
-            Token::Symbol(sym) => Expr::Symbol(sym),
+            Token::Symbol(sym) => Expr::Symbol(sym.to_string()),
             _ => unreachable!(),
         }
     }
