@@ -3,12 +3,12 @@
 use std::fmt;
 
 /// An expression
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Expr {
     /// Integer: `123`
     Integer(u64),
     /// List: `(+ 1 2)`
-    List(Box<[Expr]>),
+    List(Vec<Expr>),
     /// `()`
     Nil,
     /// String: `"Hello, world!"`
@@ -20,7 +20,7 @@ pub enum Expr {
 impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            Expr::Integer(int) => write!(f, "{}", int),
+            Expr::Integer(int) => int.fmt(f),
             Expr::List(ref exprs) => {
                 let mut is_first = true;
 

@@ -32,7 +32,7 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
     /// Parses a string
-    pub fn new(input: &'a str) -> Result<Parser<'a>, Error<'a>> {
+    fn new(input: &'a str) -> Result<Parser<'a>, Error<'a>> {
         let mut lexer = Lexer::new(input);
 
         match lexer.next() {
@@ -59,7 +59,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Parses an expression
-    pub fn parse_expr(&mut self) -> Result<Expr, Error<'a>> {
+    fn parse_expr(&mut self) -> Result<Expr, Error<'a>> {
         match self.token {
             Token::CloseDelim(delim) => Err(Error::Unmatched(delim)),
             Token::Eof => Ok(Expr::Nil),
@@ -89,7 +89,7 @@ impl<'a> Parser<'a> {
             try!(self.bump());
 
             match self.token {
-                Token::CloseDelim(Delim::Paren) => return Ok(Expr::List(exprs.into_boxed_slice())),
+                Token::CloseDelim(Delim::Paren) => return Ok(Expr::List(exprs)),
                 Token::Eof => return Err(Error::Unmatched(Delim::Paren)),
                 Token::Literal(_) => exprs.push(self.parse_lit()),
                 Token::OpenDelim(Delim::Paren) => exprs.push(try!(self.parse_list())),
