@@ -17,6 +17,8 @@ $ target/release/stage2
 11
 > (abc 1 2)
 error: UndefinedSymbol("abc")
+> (1 2 3)
+error: ExpectedSymbolGot(Integer(1))
 ```
 
 # [Documentation][docs]
