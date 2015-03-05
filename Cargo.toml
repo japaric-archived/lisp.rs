@@ -10,3 +10,6 @@ log = "*"
 
 [dependencies.lines]
 git = "https://github.com/japaric/lines.rs"
+
+[profile.dev]
+debug = false
