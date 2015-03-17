@@ -2,7 +2,6 @@
 
 #![deny(missing_docs)]
 #![deny(warnings)]
-#![feature(unicode)]
 
 pub mod ast;
 pub mod env;
