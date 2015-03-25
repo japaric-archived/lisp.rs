@@ -1,5 +1,4 @@
 #![feature(exit_status)]
-#![feature(io)]
 
 extern crate lines;
 
