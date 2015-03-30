@@ -7,19 +7,24 @@ use std::env;
 use std::io::{StdoutLock, Write, self};
 
 use lines::Lines;
-use lisp::ast::Expr;
-use lisp::parse::{Error, self};
+use lisp::diagnostics;
+use lisp::syntax::ast::Expr;
+use lisp::syntax::codemap::Source;
+use lisp::syntax::pp;
+use lisp::syntax::{Error, parse};
 
-fn read<'a>(input: &'a str) -> Result<Expr, Error<'a>> {
-    parse::expr(input)
+fn read(source: &Source) -> Result<Expr, Error> {
+    parse::expr(source)
 }
 
 fn eval(input: Expr) -> Expr {
     input
 }
 
-fn print(output: Expr, stdout: &mut StdoutLock) -> io::Result<()> {
-    stdout.write_fmt(format_args!("{}\n", output))
+fn print(output: &Expr, source: &Source, stdout: &mut StdoutLock) -> io::Result<()> {
+    let mut string = pp::expr(output, source);
+    string.push('\n');
+    stdout.write_all(string.as_bytes())
 }
 
 fn rep(stdout: &mut StdoutLock) -> io::Result<()> {
@@ -31,9 +36,15 @@ fn rep(stdout: &mut StdoutLock) -> io::Result<()> {
     try!(stdout.write_all(PROMPT.as_bytes()));
     try!(stdout.flush());
     while let Some(line) = lines.next() {
-        match read(try!(line)) {
-            Err(e) => try!(stdout.write_fmt(format_args!("error: {:?}\n", e))),
-            Ok(expr) => try!(print(eval(expr), stdout)),
+        let source = Source::new(try!(line));
+
+        if !source.as_str().trim().is_empty() {
+            match read(source) {
+                Err(error) => {
+                    try!(stdout.write_all(diagnostics::syntax(error, source).as_bytes()))
+                },
+                Ok(expr) => try!(print(&eval(expr), source, stdout)),
+            }
         }
 
         try!(stdout.write_all(PROMPT.as_bytes()));

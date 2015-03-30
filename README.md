@@ -10,15 +10,19 @@ Status: step 2 completed
 
 ```
 $ cargo build --release
-$ target/release/stage2
+$ target/release/step2
 > (+ 1 2)
 3
 > (+ 5 (* 2 3))
 11
 > (abc 1 2)
-error: UndefinedSymbol("abc")
+error: undefined symbol
+(abc 1 2)
+ ^~~
 > (1 2 3)
-error: ExpectedSymbolGot(Integer(1))
+error: expected symbol
+(1 2 3)
+ ^
 ```
 
 # [Documentation][docs]
