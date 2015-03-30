@@ -1,10 +1,13 @@
-//! A Lisp written in Rust
+//! A Lisp interpreter written in Rust
 
 #![deny(missing_docs)]
 #![deny(warnings)]
-#![feature(into_cow)]
+#![feature(collections)]
+#![feature(core)]
+#![feature(slice_patterns)]
+#![feature(unboxed_closures)]
+#![feature(unicode)]
 
-pub mod ast;
-pub mod env;
+pub mod diagnostics;
 pub mod eval;
-pub mod parse;
+pub mod syntax;
