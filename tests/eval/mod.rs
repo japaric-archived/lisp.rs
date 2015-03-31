@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use lisp::eval::env::Env;
+use lisp::eval::env::{Env, self};
 use lisp::eval;
 use lisp::syntax::codemap::Source;
 use lisp::syntax::parse;
@@ -17,7 +17,7 @@ pub fn eq(input: &str, output: &str, env: &mut Env) {
 
 pub fn err(input: &str, error: eval::Error_) {
     let source = Source::new(input);
-    let mut env = Env::default();
+    let mut env = env::default();
 
     assert_eq!{
         error,

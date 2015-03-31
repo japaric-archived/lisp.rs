@@ -2,14 +2,25 @@
 
 use std::collections::HashMap;
 
-use eval::{Function, Value};
+use eval::Value;
 
 /// Environment
-pub struct Env {
-    /// Declared functions
-    pub functions: HashMap<String, Function>,
-    /// Declared variables
-    pub variables: HashMap<String, Value>,
+pub type Env = HashMap<String, Value>;
+
+/// The default environment
+pub fn default() -> Env {
+    let mut env = Env::new();
+
+    env.insert(String::from_str("*"), Value::Function(mul));
+    env.insert(String::from_str("+"), Value::Function(add));
+    env.insert(String::from_str("-"), Value::Function(sub));
+    env.insert(String::from_str("/"), Value::Function(div));
+    env.insert(String::from_str("<"), Value::Function(lt));
+    env.insert(String::from_str("<="), Value::Function(le));
+    env.insert(String::from_str(">"), Value::Function(gt));
+    env.insert(String::from_str(">="), Value::Function(ge));
+
+    env
 }
 
 fn add(args: &[Value]) -> Option<Value> {
@@ -65,31 +76,5 @@ fn sub(args: &[Value]) -> Option<Value> {
     match args {
         [Value::Integer(a), Value::Integer(b)] => Some(Value::Integer(a - b)),
         _ => None,
-    }
-}
-
-impl Env {
-    /// A new empty environment
-    fn new() -> Env {
-        Env {
-            functions: HashMap::new(),
-            variables: HashMap::new(),
-        }
-    }
-
-    /// The default environment
-    pub fn default() -> Env {
-        let mut env = Env::new();
-
-        env.functions.insert(String::from_str("*"), mul);
-        env.functions.insert(String::from_str("+"), add);
-        env.functions.insert(String::from_str("-"), sub);
-        env.functions.insert(String::from_str("/"), div);
-        env.functions.insert(String::from_str("<"), lt);
-        env.functions.insert(String::from_str("<="), le);
-        env.functions.insert(String::from_str(">"), gt);
-        env.functions.insert(String::from_str(">="), ge);
-
-        env
     }
 }

@@ -2,11 +2,11 @@ extern crate lisp;
 
 mod eval;
 
-use lisp::eval::env::Env;
+use lisp::eval::env;
 
 #[test]
 fn eq() {
-    let ref mut env = Env::default();
+    let ref mut env = env::default();
 
     eval::eq("(+ 1 2)", "3", env);
     eval::eq("(+ 5 (* 2 3))", "11", env);

@@ -2,11 +2,11 @@ extern crate lisp;
 
 mod eval;
 
-use lisp::eval::env::Env;
+use lisp::eval::env;
 
 #[test]
 fn env() {
-    let ref mut env = Env::default();
+    let ref mut env = env::default();
 
     eval::eq("(+ 1 2)", "3", env);
     eval::eq("(/ (- (+ 5 (* 2 3)) 3) 4)", "2", env);
@@ -14,7 +14,7 @@ fn env() {
 
 #[test]
 fn def() {
-    let ref mut env = Env::default();
+    let ref mut env = env::default();
 
     eval::eq("(def! x 3)", "3", env);
     eval::eq("(def! x 4)", "4", env);
@@ -27,7 +27,7 @@ fn def() {
 #[ignore]
 #[test]
 fn let_() {
-    let ref mut env = Env::default();
+    let ref mut env = env::default();
 
     eval::eq("(let* (z 9) z)", "9", env);
     eval::eq("(let* (x 9) x)", "9", env);
@@ -39,7 +39,7 @@ fn let_() {
 #[ignore]
 #[test]
 fn outer() {
-    let ref mut env = Env::default();
+    let ref mut env = env::default();
 
     eval::eq("(def! a 4)", "4", env);
     eval::eq("(let* (q 9) q)", "9", env);

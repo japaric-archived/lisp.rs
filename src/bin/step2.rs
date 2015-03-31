@@ -3,13 +3,12 @@
 extern crate lines;
 extern crate lisp;
 
-use std::env;
 use std::io::{StdoutLock, Write, self};
 
 use lines::Lines;
 use lisp::diagnostics;
 use lisp::eval::{Value, self};
-use lisp::eval::env::Env;
+use lisp::eval::env::{Env, self};
 use lisp::syntax::ast::Expr;
 use lisp::syntax::codemap::Source;
 use lisp::syntax::{parse, self};
@@ -31,7 +30,7 @@ fn rep(stdout: &mut StdoutLock) -> io::Result<()> {
 
     let stdin = io::stdin();
     let mut lines = Lines::from(stdin.lock());
-    let mut env = Env::default();
+    let mut env = env::default();
 
     try!(stdout.write_all(PROMPT.as_bytes()));
     try!(stdout.flush());
@@ -60,6 +59,8 @@ fn rep(stdout: &mut StdoutLock) -> io::Result<()> {
 }
 
 fn main() {
+    use std::env;
+
     let stdout = io::stdout();
     let mut stdout = stdout.lock();
 

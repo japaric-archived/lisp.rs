@@ -106,7 +106,7 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
                                     let value = try!(::eval::expr(expr, source, env));
                                     let symbol = String::from_str(&source[symbol.span]);
 
-                                    env.variables.insert(symbol, value.clone());
+                                    env.insert(symbol, value.clone());
 
                                     Ok(value)
                                 } else {
@@ -136,20 +136,25 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
                 Expr_::Symbol => {
                     let symbol = &source[head.span];
 
-                    if let Some(function) = env.functions.get(symbol).map(Clone::clone) {
-                        let mut args = Vec::with_capacity(tail.len());
+                    if let Some(value) = env.get(symbol).map(Clone::clone) {
+                        match value {
+                            Value::Function(function) => {
+                                let mut args = Vec::with_capacity(tail.len());
 
-                        for elem in tail {
-                            args.push(try!(::eval::expr(elem, source, env)));
-                        }
+                                for elem in tail {
+                                    args.push(try!(::eval::expr(elem, source, env)));
+                                }
 
-                        if let Some(value) = function(&args) {
-                            Ok(value)
-                        } else {
-                            Err(Spanned::new(expr.span, Error_::UnsupportedOperation))
+                                if let Some(value) = function(&args) {
+                                    Ok(value)
+                                } else {
+                                    Err(Spanned::new(expr.span, Error_::UnsupportedOperation))
+                                }
+                            },
+                            _ => {
+                                Err(Spanned::new(head.span, Error_::ExpectedFunction))
+                            }
                         }
-                    } else if env.variables.contains_key(symbol) {
-                        Err(Spanned::new(head.span, Error_::ExpectedFunction))
                     } else {
                         Err(Spanned::new(head.span, Error_::UndefinedSymbol))
                     }
@@ -162,10 +167,8 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
         Expr_::Symbol => {
             let symbol = &source[expr.span];
 
-            if let Some(value) = env.variables.get(symbol) {
+            if let Some(value) = env.get(symbol) {
                 Ok(value.clone())
-            } else if let Some(&function) = env.functions.get(symbol) {
-                Ok(Value::Function(function))
             } else {
                 Err(Spanned::new(expr.span, Error_::UndefinedSymbol))
             }
