@@ -12,10 +12,12 @@ pub enum Expr_ {
     Bool(bool),
     /// `123`
     Integer(i64),
-    /// `(+ 1 2)`
-    List(Vec<Expr>),
     /// `def!`, `let*`
     Keyword(Keyword),
+    /// `(+ 1 2)`
+    List(Vec<Expr>),
+    /// `nil`
+    Nil,
     /// `"Hello, world!"`
     String,
     /// `+`, `-`
@@ -29,6 +31,8 @@ pub enum Expr_ {
 pub enum Keyword {
     /// `def!`
     Def,
+    /// `if`
+    If,
     /// `let*`
     Let,
 }
@@ -38,6 +42,7 @@ impl Keyword {
     pub fn from_str(str: &str) -> Option<Keyword> {
         match str {
             "def!" => Some(Keyword::Def),
+            "if" => Some(Keyword::If),
             "let*" => Some(Keyword::Let),
             _ => None,
         }

@@ -50,6 +50,8 @@ pub enum Value {
     Function(Function),
     /// `123`
     Integer(i64),
+    ///  `nil`
+    Nil,
     /// `"Hello, world!"`
     String(String),
     /// `[1 "two" [3]]`
@@ -62,6 +64,7 @@ impl fmt::Display for Value {
             Value::Bool(bool) => bool.fmt(f),
             Value::Function(function) => write!(f, "<function at {:?}>", function),
             Value::Integer(integer) => integer.fmt(f),
+            Value::Nil => f.write_str("nil"),
             Value::String(ref string) => string.fmt(f),
             Value::Vector(ref elems) => {
                 try!(f.write_str("["));
@@ -113,6 +116,20 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
                                 Err(Spanned::new(expr.span, Error_::UnsupportedOperation))
                             }
                         },
+                        Keyword::If => {
+                            if let [ref cond, ref then, ref els] = tail {
+                                if match try!(::eval::expr(cond, source, env)) {
+                                    Value::Bool(false) | Value::Nil => false,
+                                    _ => true,
+                                } {
+                                    ::eval::expr(then, source, env)
+                                } else {
+                                    ::eval::expr(els, source, env)
+                                }
+                            } else {
+                                Err(Spanned::new(expr.span, Error_::UnsupportedOperation))
+                            }
+                        },
                         _ => unimplemented!(),
                     }
                 },
@@ -140,6 +157,7 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
                 _ => Err(Spanned::new(head.span, Error_::ExpectedSymbol)),
             },
         },
+        Expr_::Nil => Ok(Value::Nil),
         Expr_::String => Ok(Value::String(String::from_str(&source[expr.span]))),
         Expr_::Symbol => {
             let symbol = &source[expr.span];

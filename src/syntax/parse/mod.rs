@@ -139,6 +139,7 @@ impl<'a> Parser<'a> {
     fn symbol(&self) -> Result<Expr, Error> {
         match &self.source[self.span] {
             "false" => Ok(self.spanned(Expr_::Bool(false))),
+            "nil" => Ok(self.spanned(Expr_::Nil)),
             "true" => Ok(self.spanned(Expr_::Bool(true))),
             _ => Ok(self.spanned(Expr_::Symbol)),
         }
