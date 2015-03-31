@@ -73,10 +73,10 @@ pub struct Spanned<T> {
 
 impl<A> Spanned<A> {
     /// Creates a spanned node
-    pub fn new(lo: BytePos, hi: BytePos, node: A) -> Spanned<A> {
+    pub fn new(span: Span, node: A) -> Spanned<A> {
         Spanned {
-            span: Span::new(lo, hi),
             node: node,
+            span: span,
         }
     }
 

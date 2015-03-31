@@ -5,7 +5,12 @@ use std::collections::HashMap;
 use eval::{Function, Value};
 
 /// Environment
-pub struct Env(HashMap<String, Function>);
+pub struct Env {
+    /// Declared functions
+    pub functions: HashMap<String, Function>,
+    /// Declared variables
+    pub variables: HashMap<String, Value>,
+}
 
 fn add(args: &[Value]) -> Option<Value> {
     match args {
@@ -38,28 +43,21 @@ fn sub(args: &[Value]) -> Option<Value> {
 impl Env {
     /// A new empty environment
     fn new() -> Env {
-        Env(HashMap::new())
+        Env {
+            functions: HashMap::new(),
+            variables: HashMap::new(),
+        }
     }
 
     /// The default environment
     pub fn default() -> Env {
         let mut env = Env::new();
 
-        env.0.insert(String::from_str("*"), Box::new(mul));
-        env.0.insert(String::from_str("+"), Box::new(add));
-        env.0.insert(String::from_str("-"), Box::new(sub));
-        env.0.insert(String::from_str("/"), Box::new(div));
+        env.functions.insert(String::from_str("*"), mul);
+        env.functions.insert(String::from_str("+"), add);
+        env.functions.insert(String::from_str("-"), sub);
+        env.functions.insert(String::from_str("/"), div);
 
         env
-    }
-
-    /// Checks if `symbol` has been defined in this environment
-    pub fn contains(&self, symbol: &str) -> bool {
-        self.0.contains_key(symbol)
-    }
-
-    /// Retrieves the function associated to `symbol`, if any
-    pub fn get(&self, symbol: &str) -> Option<&Function> {
-        self.0.get(symbol)
     }
 }

@@ -3,8 +3,9 @@
 use std::iter::Peekable;
 use std::str::CharIndices;
 
-use syntax::{Error, Error_};
+use syntax::ast::Keyword;
 use syntax::codemap::{BytePos, Source, Span, Spanned};
+use syntax::{Error, Error_};
 
 /// Lexer
 pub struct Lexer<'a> {
@@ -105,7 +106,11 @@ impl<'a> Lexer<'a> {
 
         self.advance_while(is_part_of_symbol);
 
-        Ok(self.spanned(lo, Token_::Symbol))
+        if let Some(keyword) = Keyword::from_str(&self.input[lo..self.next_byte_pos()]) {
+            Ok(self.spanned(lo, Token_::Keyword(keyword)))
+        } else {
+            Ok(self.spanned(lo, Token_::Symbol))
+        }
     }
 
     /// Lexes whitespace
@@ -153,6 +158,8 @@ pub enum Token_ {
     Close(Delim),
     /// `123`
     Integer,
+    /// `def!`, `let*`
+    Keyword(Keyword),
     /// Opening delimiter: `(`
     Open(Delim),
     /// `"Hello, world!"`

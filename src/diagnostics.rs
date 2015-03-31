@@ -11,6 +11,7 @@ pub fn eval(error: eval::Error, source: &Source) -> String {
 
         match error {
             EmptyList => string.push_str("empty list"),
+            ExpectedFunction => string.push_str("expected function"),
             ExpectedSymbol => string.push_str("expected symbol"),
             UndefinedSymbol => string.push_str("undefined symbol"),
             UnsupportedOperation => string.push_str("unsupported operation"),
@@ -27,6 +28,7 @@ pub fn syntax(error: syntax::Error, source: &Source) -> String {
             ExpectedEndOfLine => string.push_str("expected end of line"),
             IncorrectCloseDelimiter => string.push_str("incorrect close delimiter"),
             IntegerTooLarge => string.push_str("integer literal is too large"),
+            KeywordNotAllowedHere => string.push_str("keyword not allowed here"),
             UnclosedDelimiter => string.push_str("un-closed delimiter"),
             UnknownCharacterEscape => string.push_str("unknown character escape"),
             UnknownStartOfToken => string.push_str("unknown start of token"),

@@ -19,6 +19,8 @@ pub enum Error_ {
     IncorrectCloseDelimiter,
     /// The integer literal doesn't fit in 64 bits
     IntegerTooLarge,
+    /// `(+ def! 1)`
+    KeywordNotAllowedHere,
     /// `(+ 1 2`
     UnclosedDelimiter,
     /// `"\a"`

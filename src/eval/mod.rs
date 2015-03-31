@@ -3,7 +3,7 @@
 use std::fmt;
 
 use eval::env::Env;
-use syntax::ast::{Expr, Expr_};
+use syntax::ast::{Expr, Expr_, Keyword};
 use syntax::codemap::{Source, Spanned};
 
 pub mod env;
@@ -12,13 +12,27 @@ pub mod env;
 pub type Error = Spanned<Error_>;
 
 /// A function
-pub type Function = Box<Fn(&[Value]) -> Option<Value>>;
+pub type Function = fn(&[Value]) -> Option<Value>;
+
+impl Clone for Function {
+    fn clone(&self) -> Function {
+        *self
+    }
+}
+
+impl fmt::Debug for Function {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Debug::fmt(&(*self as *const ()), f)
+    }
+}
 
 /// Evaluation error
 #[derive(Debug, PartialEq)]
 pub enum Error_ {
     /// `()`
     EmptyList,
+    /// `(a 1 2)` where `a = 2`
+    ExpectedFunction,
     /// `(1 2 3)`
     ExpectedSymbol,
     /// `(foo 1 2)`
@@ -28,14 +42,14 @@ pub enum Error_ {
 }
 
 /// A value
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Value {
+    /// `+`
+    Function(Function),
     /// `123`
     Integer(i64),
     /// `"Hello, world!"`
     String(String),
-    /// `+`
-    Symbol(String),
     /// `[1 "two" [3]]`
     Vector(Vec<Value>),
 }
@@ -43,9 +57,9 @@ pub enum Value {
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
+            Value::Function(function) => write!(f, "<function at {:?}>", function),
             Value::Integer(integer) => integer.fmt(f),
             Value::String(ref string) => string.fmt(f),
-            Value::Symbol(ref symbol) => symbol.fmt(f),
             Value::Vector(ref elems) => {
                 try!(f.write_str("["));
 
@@ -67,14 +81,41 @@ impl fmt::Display for Value {
 }
 
 /// Evaluates an expression
-pub fn expr(expr: &Expr, source: &Source, env: &Env) -> Result<Value, Error> {
+pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error> {
     match expr.node {
         Expr_::Integer(integer) => Ok(Value::Integer(integer)),
+        Expr_::Keyword(_) => {
+            // This is a syntax error that gets caught earlier on
+            unreachable!()
+        },
         Expr_::List(ref exprs) => match &exprs[..] {
-            [] => Err(Spanned { span: expr.span, node: Error_::EmptyList }),
+            [] => Err(Spanned::new(expr.span, Error_::EmptyList)),
             [ref head, tail..] => match head.node {
+                Expr_::Keyword(keyword) => {
+                    match keyword {
+                        Keyword::Def => {
+                            if let [ref symbol, ref expr] = tail {
+                                if let Expr_::Symbol = symbol.node {
+                                    let value = try!(::eval::expr(expr, source, env));
+                                    let symbol = String::from_str(&source[symbol.span]);
+
+                                    env.variables.insert(symbol, value.clone());
+
+                                    Ok(value)
+                                } else {
+                                    Err(Spanned::new(symbol.span, Error_::ExpectedSymbol))
+                                }
+                            } else {
+                                Err(Spanned::new(expr.span, Error_::UnsupportedOperation))
+                            }
+                        },
+                        _ => unimplemented!(),
+                    }
+                },
                 Expr_::Symbol => {
-                    if let Some(function) = env.get(&source[head.span]) {
+                    let symbol = &source[head.span];
+
+                    if let Some(function) = env.functions.get(symbol).map(Clone::clone) {
                         let mut args = Vec::with_capacity(tail.len());
 
                         for elem in tail {
@@ -84,23 +125,27 @@ pub fn expr(expr: &Expr, source: &Source, env: &Env) -> Result<Value, Error> {
                         if let Some(value) = function(&args) {
                             Ok(value)
                         } else {
-                            Err(Spanned { span: expr.span, node: Error_::UnsupportedOperation })
+                            Err(Spanned::new(expr.span, Error_::UnsupportedOperation))
                         }
+                    } else if env.variables.contains_key(symbol) {
+                        Err(Spanned::new(head.span, Error_::ExpectedFunction))
                     } else {
-                        Err(Spanned { span: head.span, node: Error_::UndefinedSymbol })
+                        Err(Spanned::new(head.span, Error_::UndefinedSymbol))
                     }
                 },
-                _ => Err(Spanned { span: head.span, node: Error_::ExpectedSymbol }),
+                _ => Err(Spanned::new(head.span, Error_::ExpectedSymbol)),
             },
         },
         Expr_::String => Ok(Value::String(String::from_str(&source[expr.span]))),
         Expr_::Symbol => {
             let symbol = &source[expr.span];
 
-            if env.contains(symbol) {
-                Ok(Value::Symbol(String::from_str(symbol)))
+            if let Some(value) = env.variables.get(symbol) {
+                Ok(value.clone())
+            } else if let Some(&function) = env.functions.get(symbol) {
+                Ok(Value::Function(function))
             } else {
-                Err(Spanned { span: expr.span, node: Error_::UndefinedSymbol })
+                Err(Spanned::new(expr.span, Error_::UndefinedSymbol))
             }
         },
         Expr_::Vector(ref exprs) => {

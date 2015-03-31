@@ -30,6 +30,7 @@ impl<'a> Parser<'a> {
         match self.next() {
             None => unreachable!(),
             Some(Ok(Token_::Integer)) => self.integer(),
+            Some(Ok(Token_::Keyword(_))) => Err(self.spanned(Error_::KeywordNotAllowedHere)),
             Some(Ok(Token_::String)) => self.string(),
             Some(Ok(Token_::Symbol)) => self.symbol(),
             Some(Ok(Token_::Whitespace)) => self.expr(),
@@ -52,7 +53,7 @@ impl<'a> Parser<'a> {
 
     /// Parses a list
     fn list(&mut self) -> Result<Expr, Error> {
-        Ok(try!(self.seq(Delim::Paren)).map(Expr_::List))
+        Ok(try!(self.seq(Delim::Paren, true)).map(Expr_::List))
     }
 
     /// Advances the parser by one token
@@ -72,39 +73,54 @@ impl<'a> Parser<'a> {
     }
 
     /// Parses a "sequence" until the `close` delimiter is reached
-    fn seq(&mut self, close: Delim) -> Result<Spanned<Vec<Expr>>, Error> {
+    ///
+    /// if `accept_keyword` is true, then the first element of the sequence can be a keyword
+    fn seq(&mut self, close: Delim, accept_keyword: bool) -> Result<Spanned<Vec<Expr>>, Error> {
         let lo = self.span.lo;
         let mut exprs = vec![];
 
         loop {
             match self.lexer.peek() {
                 None => {
-                    return Err(Spanned::new(self.span.hi, self.span.hi, Error_::UnclosedDelimiter))
+                    let span = Span::new(self.span.hi, self.span.hi);
+
+                    return Err(Spanned::new(span, Error_::UnclosedDelimiter))
                 },
                 Some(&Err(error)) => {
                     self.next();
+
                     return Err(error)
                 },
-                Some(&Ok(Spanned { node: Token_::Close(delim), .. })) => {
-                    self.next();
+                Some(&Ok(token)) => {
+                    match token.node {
+                        Token_::Close(delim) => {
+                            self.next();
 
-                    if delim == close {
-                        break
-                    } else {
-                        return Err(self.spanned(Error_::IncorrectCloseDelimiter))
+                            if delim == close {
+                                break
+                            } else {
+                                return Err(self.spanned(Error_::IncorrectCloseDelimiter))
+                            }
+                        },
+                        Token_::Keyword(keyword) if accept_keyword && exprs.len() == 0 => {
+                            self.next();
+
+                            exprs.push(self.spanned(Expr_::Keyword(keyword)));
+                        },
+                        Token_::Whitespace => {
+                            self.next();
+                        },
+                        _ => {
+                            exprs.push(try!(self.expr()))
+                        }
                     }
-                },
-                Some(&Ok(Spanned { node: Token_::Whitespace, .. })) => {
-                    self.next();
-                },
-                Some(&Ok(_)) => {
-                    exprs.push(try!(self.expr()));
-                    continue
-                },
+                }
             }
         }
 
-        Ok(Spanned::new(lo, self.span.hi, exprs))
+        let span = Span::new(lo, self.span.hi);
+
+        Ok(Spanned::new(span, exprs))
     }
 
     fn spanned<T>(&self, node: T) -> Spanned<T> {
@@ -126,7 +142,7 @@ impl<'a> Parser<'a> {
 
     /// Parses a vector
     fn vector(&mut self) -> Result<Expr, Error> {
-        Ok(try!(self.seq(Delim::Bracket)).map(Expr_::Vector))
+        Ok(try!(self.seq(Delim::Bracket, false)).map(Expr_::Vector))
     }
 }
 

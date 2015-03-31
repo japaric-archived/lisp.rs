@@ -4,5 +4,20 @@ authors = ["Jorge Aparicio <japaricious@gmail.com>"]
 name = "lisp"
 version = "0.0.0"
 
+[[bin]]
+name = "step0"
+path = "src/bin/step0.rs"
+test = false
+
+[[bin]]
+name = "step1"
+path = "src/bin/step1.rs"
+test = false
+
+[[bin]]
+name = "step2"
+path = "src/bin/step2.rs"
+test = false
+
 [dependencies.lines]
 git = "https://github.com/japaric/lines.rs"
