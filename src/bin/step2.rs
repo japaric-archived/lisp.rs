@@ -7,14 +7,15 @@ use std::io::{StdoutLock, Write, self};
 
 use lines::Lines;
 use lisp::diagnostics;
-use lisp::eval::{Value, self};
 use lisp::eval::env::{Env, self};
+use lisp::eval::{Value, self};
 use lisp::syntax::ast::Expr;
+use lisp::syntax::ast::interner::Interner;
 use lisp::syntax::codemap::Source;
 use lisp::syntax::{parse, self};
 
-fn read(source: &Source) -> Result<Expr, syntax::Error> {
-    parse::expr(source)
+fn read(source: &Source, interner: &mut Interner) -> Result<Expr, syntax::Error> {
+    parse::expr(source, interner)
 }
 
 fn eval(input: &Expr, source: &Source, env: &mut Env) -> Result<Value, eval::Error> {
@@ -30,7 +31,9 @@ fn rep(stdout: &mut StdoutLock) -> io::Result<()> {
 
     let stdin = io::stdin();
     let mut lines = Lines::from(stdin.lock());
-    let mut env = env::default();
+
+    let ref mut interner = Interner::new();
+    let mut env = env::default(interner);
 
     try!(stdout.write_all(PROMPT.as_bytes()));
     try!(stdout.flush());
@@ -38,7 +41,7 @@ fn rep(stdout: &mut StdoutLock) -> io::Result<()> {
         let source = Source::new(try!(line));
 
         if !source.as_str().trim().is_empty() {
-            match read(source) {
+            match read(source, interner) {
                 Err(error) => {
                     try!(stdout.write_all(diagnostics::syntax(error, source).as_bytes()))
                 },

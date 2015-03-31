@@ -9,12 +9,13 @@ use std::io::{StdoutLock, Write, self};
 use lines::Lines;
 use lisp::diagnostics;
 use lisp::syntax::ast::Expr;
+use lisp::syntax::ast::interner::Interner;
 use lisp::syntax::codemap::Source;
 use lisp::syntax::pp;
 use lisp::syntax::{Error, parse};
 
-fn read(source: &Source) -> Result<Expr, Error> {
-    parse::expr(source)
+fn read(source: &Source, interner: &mut Interner) -> Result<Expr, Error> {
+    parse::expr(source, interner)
 }
 
 fn eval(input: Expr) -> Expr {
@@ -33,13 +34,15 @@ fn rep(stdout: &mut StdoutLock) -> io::Result<()> {
     let stdin = io::stdin();
     let mut lines = Lines::from(stdin.lock());
 
+    let ref mut interner = Interner::new();
+
     try!(stdout.write_all(PROMPT.as_bytes()));
     try!(stdout.flush());
     while let Some(line) = lines.next() {
         let source = Source::new(try!(line));
 
         if !source.as_str().trim().is_empty() {
-            match read(source) {
+            match read(source, interner) {
                 Err(error) => {
                     try!(stdout.write_all(diagnostics::syntax(error, source).as_bytes()))
                 },

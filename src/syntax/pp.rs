@@ -36,7 +36,7 @@ fn expr_(string: &mut String, expr: &Expr, source: &Source) {
         },
         Expr_::Nil => string.push_str("nil"),
         Expr_::String => string.push_str(&source[expr.span]),
-        Expr_::Symbol => string.push_str(&source[expr.span]),
+        Expr_::Symbol(_) => string.push_str(&source[expr.span]),
         Expr_::Vector(ref exprs) => {
             string.push('[');
             seq(string, exprs, source);

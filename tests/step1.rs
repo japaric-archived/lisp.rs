@@ -1,12 +1,13 @@
 extern crate lisp;
 
+use lisp::syntax::ast::interner::Interner;
 use lisp::syntax::codemap::Source;
 use lisp::syntax::parse;
 use lisp::syntax::pp;
 
-fn eq(source: &str, expected_repr: &str) {
+fn eq(source: &str, expected_repr: &str, interner: &mut Interner) {
     let source = Source::new(source);
-    let expr = parse::expr(source).unwrap();
+    let expr = parse::expr(source, interner).unwrap();
     let repr = pp::expr(&expr, source);
 
     assert_eq!(repr, expected_repr)
@@ -14,69 +15,85 @@ fn eq(source: &str, expected_repr: &str) {
 
 #[test]
 fn nil_true_false() {
-    eq("nil", "nil");
-    eq("true", "true");
-    eq("false", "false");
+    let ref mut interner = Interner::new();
+
+    eq("nil", "nil", interner);
+    eq("true", "true", interner);
+    eq("false", "false", interner);
 }
 
 #[test]
 fn numbers() {
-    eq("1", "1");
-    eq("  7   ", "7");
+    let ref mut interner = Interner::new();
+
+    eq("1", "1", interner);
+    eq("  7   ", "7", interner);
 }
 
 #[test]
 fn symbols() {
-    eq("+", "+");
-    eq("abc", "abc");
-    eq("   abc   ", "abc");
-    eq("abc5", "abc5");
-    eq("abc-def", "abc-def");
+    let ref mut interner = Interner::new();
+
+    eq("+", "+", interner);
+    eq("abc", "abc", interner);
+    eq("   abc   ", "abc", interner);
+    eq("abc5", "abc5", interner);
+    eq("abc-def", "abc-def", interner);
 }
 
 #[test]
 fn string() {
-    eq("\"abc\"", "\"abc\"");
-    eq("   \"abc\"   ", "\"abc\"");
-    eq("\"abc (with parens)\"", "\"abc (with parens)\"");
+    let ref mut interner = Interner::new();
+
+    eq("\"abc\"", "\"abc\"", interner);
+    eq("   \"abc\"   ", "\"abc\"", interner);
+    eq("\"abc (with parens)\"", "\"abc (with parens)\"", interner);
     // TODO handle escaping
-    //eq(r#""abc\"def""#, "");
-    eq(r#""abc\ndef""#, "\"abc\\ndef\"");
+    //eq(r#""abc\"def""#, "", interner);
+    eq(r#""abc\ndef""#, "\"abc\\ndef\"", interner);
 }
 
 #[test]
 fn lists() {
-    eq("(+ 1 2)", "(+ 1 2)");
-    eq("((3 4))", "((3 4))");
-    eq("(+ 1 (+ 2 3))", "(+ 1 (+ 2 3))");
-    eq("  ( +   1   (+   2 3   )   )  ", "(+ 1 (+ 2 3))");
-    eq("(* 1 2)", "(* 1 2)");
-    eq("(** 1 2)", "(** 1 2)");
+    let ref mut interner = Interner::new();
+
+    eq("(+ 1 2)", "(+ 1 2)", interner);
+    eq("((3 4))", "((3 4))", interner);
+    eq("(+ 1 (+ 2 3))", "(+ 1 (+ 2 3))", interner);
+    eq("  ( +   1   (+   2 3   )   )  ", "(+ 1 (+ 2 3))", interner);
+    eq("(* 1 2)", "(* 1 2)", interner);
+    eq("(** 1 2)", "(** 1 2)", interner);
 }
 
 #[test]
 fn commas() {
-    eq("(1 2, 3,,,,),,", "(1 2 3)");
+    let ref mut interner = Interner::new();
+
+    eq("(1 2, 3,,,,),,", "(1 2 3)", interner);
 }
 
 // TODO implement quoting
 #[test]
 #[ignore]
 fn quoting() {
-    eq(("'1"), "(quote 1)");
-    eq(("'(1 2 3)"), "(quote (1 2 3))");
-    eq(("`1"), "(quasiquote 1)");
-    eq(("`(1 2 3)"), "(quasiquote (1 2 3))");
-    eq(("~1"), "(unquote 1)");
-    eq(("~(1 2 3)"), "(unquote (1 2 3))");
-    eq(("~@(1 2 3)"), "(splice-unquote (1 2 3))");
+    let ref mut interner = Interner::new();
+
+    eq(("'1"), "(quote 1)", interner);
+    eq(("'(1 2 3)"), "(quote (1 2 3))", interner);
+    eq(("`1"), "(quasiquote 1)", interner);
+    eq(("`(1 2 3)"), "(quasiquote (1 2 3))", interner);
+    eq(("~1"), "(unquote 1)", interner);
+    eq(("~(1 2 3)"), "(unquote (1 2 3))", interner);
+    eq(("~@(1 2 3)"), "(splice-unquote (1 2 3))", interner);
 }
 
 #[test]
 fn errors() {
-    assert!(parse::expr(Source::new("(1 2")).is_err());
-    assert!(parse::expr(Source::new("[1 2")).is_err());
-    assert!(parse::expr(Source::new("\"abc")).is_err());
+    let ref mut interner = Interner::new();
+
+    assert!(parse::expr(Source::new("(1 2"), interner).is_err());
+    assert!(parse::expr(Source::new("[1 2"), interner).is_err());
+    assert!(parse::expr(Source::new("\"abc"), interner).is_err());
 }
 
 // TODO optional tests

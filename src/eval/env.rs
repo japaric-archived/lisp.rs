@@ -3,22 +3,24 @@
 use std::collections::HashMap;
 
 use eval::Value;
+use syntax::ast::Symbol;
+use syntax::ast::interner::Interner;
 
 /// Environment
-pub type Env = HashMap<String, Value>;
+pub type Env = HashMap<Symbol, Value>;
 
 /// The default environment
-pub fn default() -> Env {
+pub fn default(interner: &mut Interner) -> Env {
     let mut env = Env::new();
 
-    env.insert(String::from_str("*"), Value::Function(mul));
-    env.insert(String::from_str("+"), Value::Function(add));
-    env.insert(String::from_str("-"), Value::Function(sub));
-    env.insert(String::from_str("/"), Value::Function(div));
-    env.insert(String::from_str("<"), Value::Function(lt));
-    env.insert(String::from_str("<="), Value::Function(le));
-    env.insert(String::from_str(">"), Value::Function(gt));
-    env.insert(String::from_str(">="), Value::Function(ge));
+    env.insert(interner.intern("*"), Value::Function(mul));
+    env.insert(interner.intern("+"), Value::Function(add));
+    env.insert(interner.intern("-"), Value::Function(sub));
+    env.insert(interner.intern("/"), Value::Function(div));
+    env.insert(interner.intern("<"), Value::Function(lt));
+    env.insert(interner.intern("<="), Value::Function(le));
+    env.insert(interner.intern(">"), Value::Function(gt));
+    env.insert(interner.intern(">="), Value::Function(ge));
 
     env
 }

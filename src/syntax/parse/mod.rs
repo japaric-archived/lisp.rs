@@ -4,12 +4,15 @@ mod lexer;
 
 use std::iter::Peekable;
 
-use syntax::{Error, Error_};
+use syntax::ast::interner::Interner;
 use syntax::ast::{Expr, Expr_};
 use syntax::codemap::{Source, Span, Spanned};
 use syntax::parse::lexer::{Delim, Lexer, Token_};
+use syntax::{Error, Error_};
 
 struct Parser<'a> {
+    // NB `Option` needed for option dance
+    interner: Option<&'a mut Interner>,
     lexer: Peekable<Lexer<'a>>,
     source: &'a Source,
     span: Span,
@@ -17,8 +20,9 @@ struct Parser<'a> {
 
 impl<'a> Parser<'a> {
     /// Parses the source code
-    fn new(source: &'a Source) -> Parser<'a> {
+    fn new(source: &'a Source, interner: &'a mut Interner) -> Parser<'a> {
         Parser {
+            interner: Some(interner),
             lexer: Lexer::new(source).peekable(),
             source: source,
             span: Span::dummy(),
@@ -136,13 +140,22 @@ impl<'a> Parser<'a> {
     }
 
     /// Parses a symbol
-    fn symbol(&self) -> Result<Expr, Error> {
-        match &self.source[self.span] {
+    fn symbol(&mut self) -> Result<Expr, Error> {
+        // NB option dance
+        let interner = self.interner.take().unwrap();
+        let string = &self.source[self.span];
+
+        let expr = match string {
             "false" => Ok(self.spanned(Expr_::Bool(false))),
             "nil" => Ok(self.spanned(Expr_::Nil)),
             "true" => Ok(self.spanned(Expr_::Bool(true))),
-            _ => Ok(self.spanned(Expr_::Symbol)),
-        }
+            _ => Ok(self.spanned(Expr_::Symbol(interner.intern(string)))),
+        };
+
+        // NB option dance
+        self.interner = Some(interner);
+
+        expr
     }
 
     /// Parses a vector
@@ -152,8 +165,8 @@ impl<'a> Parser<'a> {
 }
 
 /// Parses a single expression
-pub fn expr<'a>(source: &'a Source) -> Result<Expr, Error> {
-    let mut parser = Parser::new(source);
+pub fn expr<'a>(source: &'a Source, interner: &'a mut Interner) -> Result<Expr, Error> {
+    let mut parser = Parser::new(source, interner);
     let expr = try!(parser.expr());
 
     loop {

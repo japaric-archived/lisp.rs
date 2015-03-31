@@ -102,9 +102,8 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
                     match keyword {
                         Keyword::Def => {
                             if let [ref symbol, ref expr] = tail {
-                                if let Expr_::Symbol = symbol.node {
+                                if let Expr_::Symbol(symbol) = symbol.node {
                                     let value = try!(::eval::expr(expr, source, env));
-                                    let symbol = String::from_str(&source[symbol.span]);
 
                                     env.insert(symbol, value.clone());
 
@@ -133,9 +132,7 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
                         _ => unimplemented!(),
                     }
                 },
-                Expr_::Symbol => {
-                    let symbol = &source[head.span];
-
+                Expr_::Symbol(ref symbol) => {
                     if let Some(value) = env.get(symbol).map(Clone::clone) {
                         match value {
                             Value::Function(function) => {
@@ -164,9 +161,7 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
         },
         Expr_::Nil => Ok(Value::Nil),
         Expr_::String => Ok(Value::String(String::from_str(&source[expr.span]))),
-        Expr_::Symbol => {
-            let symbol = &source[expr.span];
-
+        Expr_::Symbol(ref symbol) => {
             if let Some(value) = env.get(symbol) {
                 Ok(value.clone())
             } else {
