@@ -11,7 +11,7 @@ pub mod env;
 /// Spanned error
 pub type Error = Spanned<Error_>;
 
-/// A function
+/// A built-in function
 pub type Function = fn(&[Value]) -> Option<Value>;
 
 impl Clone for Function {
@@ -44,6 +44,8 @@ pub enum Error_ {
 /// A value
 #[derive(Clone, Debug)]
 pub enum Value {
+    /// `true` or `false`
+    Bool(bool),
     /// `+`
     Function(Function),
     /// `123`
@@ -57,6 +59,7 @@ pub enum Value {
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
+            Value::Bool(bool) => bool.fmt(f),
             Value::Function(function) => write!(f, "<function at {:?}>", function),
             Value::Integer(integer) => integer.fmt(f),
             Value::String(ref string) => string.fmt(f),
@@ -83,6 +86,7 @@ impl fmt::Display for Value {
 /// Evaluates an expression
 pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error> {
     match expr.node {
+        Expr_::Bool(bool) => Ok(Value::Bool(bool)),
         Expr_::Integer(integer) => Ok(Value::Integer(integer)),
         Expr_::Keyword(_) => {
             // This is a syntax error that gets caught earlier on

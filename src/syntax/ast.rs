@@ -8,6 +8,8 @@ pub type Expr = Spanned<Expr_>;
 /// An expression
 #[derive(Debug)]
 pub enum Expr_ {
+    /// `true` or `false`
+    Bool(bool),
     /// `123`
     Integer(i64),
     /// `(+ 1 2)`

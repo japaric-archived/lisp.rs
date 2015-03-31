@@ -26,6 +26,7 @@ fn expr_(string: &mut String, expr: &Expr, source: &Source) {
     }
 
     match expr.node {
+        Expr_::Bool(bool) => string.push_str(&bool.to_string()),
         Expr_::Integer(integer) => string.push_str(&integer.to_string()),
         Expr_::Keyword(_) => string.push_str(&source[expr.span]),
         Expr_::List(ref exprs) => {
