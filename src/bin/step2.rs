@@ -18,7 +18,7 @@ fn read(source: &Source) -> Result<Expr, syntax::Error> {
     parse::expr(source)
 }
 
-fn eval(input: &Expr, source: &Source, env: &Env) -> Result<Value, eval::Error> {
+fn eval(input: &Expr, source: &Source, env: &mut Env) -> Result<Value, eval::Error> {
     eval::expr(input, source, env)
 }
 
@@ -31,7 +31,7 @@ fn rep(stdout: &mut StdoutLock) -> io::Result<()> {
 
     let stdin = io::stdin();
     let mut lines = Lines::from(stdin.lock());
-    let env = Env::default();
+    let mut env = Env::default();
 
     try!(stdout.write_all(PROMPT.as_bytes()));
     try!(stdout.flush());
@@ -43,7 +43,7 @@ fn rep(stdout: &mut StdoutLock) -> io::Result<()> {
                 Err(error) => {
                     try!(stdout.write_all(diagnostics::syntax(error, source).as_bytes()))
                 },
-                Ok(expr) => match eval(&expr, source, &env) {
+                Ok(expr) => match eval(&expr, source, &mut env) {
                     Err(error) => {
                         try!(stdout.write_all(diagnostics::eval(error, source).as_bytes()))
                     },

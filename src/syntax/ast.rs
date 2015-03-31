@@ -12,10 +12,32 @@ pub enum Expr_ {
     Integer(i64),
     /// `(+ 1 2)`
     List(Vec<Expr>),
+    /// `def!`, `let*`
+    Keyword(Keyword),
     /// `"Hello, world!"`
     String,
     /// `+`, `-`
     Symbol,
     /// `[1 "two" 3]`
     Vector(Vec<Expr>),
+}
+
+#[derive(Copy, Debug)]
+/// Special atoms
+pub enum Keyword {
+    /// `def!`
+    Def,
+    /// `let*`
+    Let,
+}
+
+impl Keyword {
+    /// Checks if `str` is a keyword
+    pub fn from_str(str: &str) -> Option<Keyword> {
+        match str {
+            "def!" => Some(Keyword::Def),
+            "let*" => Some(Keyword::Let),
+            _ => None,
+        }
+    }
 }

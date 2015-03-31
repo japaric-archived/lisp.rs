@@ -27,6 +27,7 @@ fn expr_(string: &mut String, expr: &Expr, source: &Source) {
 
     match expr.node {
         Expr_::Integer(integer) => string.push_str(&integer.to_string()),
+        Expr_::Keyword(_) => string.push_str(&source[expr.span]),
         Expr_::List(ref exprs) => {
             string.push('(');
             seq(string, exprs, source);
