@@ -18,6 +18,8 @@ pub enum Expr_ {
     Bool(bool),
     /// `123`
     Integer(i64),
+    /// `:a`
+    Keyword,
     /// `(+ 1 2)`
     List(Vec<Expr>),
     /// `nil`

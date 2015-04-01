@@ -34,6 +34,7 @@ impl<'a> Parser<'a> {
         match self.next() {
             None => unreachable!(),
             Some(Ok(Token_::Integer)) => self.integer(),
+            Some(Ok(Token_::Keyword)) => self.keyword(),
             Some(Ok(Token_::Operator(_))) => Err(self.spanned(Error_::OperatorNotAllowedHere)),
             Some(Ok(Token_::String)) => self.string(),
             Some(Ok(Token_::Symbol)) => self.symbol(),
@@ -53,6 +54,11 @@ impl<'a> Parser<'a> {
             Err(_) => Err(self.spanned(Error_::IntegerTooLarge)),
             Ok(integer) => Ok(self.spanned(Expr_::Integer(integer))),
         }
+    }
+
+    /// Parses a keyword
+    fn keyword(&mut self) -> Result<Expr, Error> {
+        Ok(self.spanned(Expr_::Keyword))
     }
 
     /// Parses a list
@@ -76,7 +82,8 @@ impl<'a> Parser<'a> {
         })
     }
 
-    /// Parses a "sequence" until the `close` delimiter is reached
+    /// Parses a "sequence" until the `close` delimiter is reached. Current position must be the
+    /// open delimiter
     ///
     /// if `accept_operator` is true, then the first element of the sequence can be a special
     /// operator

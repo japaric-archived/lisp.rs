@@ -52,6 +52,19 @@ impl<'a> Lexer<'a> {
         Ok(self.spanned(lo, Token_::Integer))
     }
 
+    /// Lexes a keyword. Current position must be `:`
+    fn keyword(&mut self) -> Result<Token, Error> {
+        let lo = self.pos;
+
+        self.advance_while(is_part_of_symbol);
+
+        if self.pos == lo {
+            Err(self.spanned(lo, Error_::EmptyKeyword))
+        } else {
+            Ok(self.spanned(lo, Token_::Keyword))
+        }
+    }
+
     /// Advances the lexer by one character
     fn next(&mut self) -> Option<char> {
         self.iter.next().map(|(i, c)| {
@@ -132,6 +145,7 @@ impl<'a> Iterator for Lexer<'a> {
                 '"' => self.string(),
                 '(' => self.token(Token_::Open(Delim::Paren)),
                 ')' => self.token(Token_::Close(Delim::Paren)),
+                ':' => self.keyword(),
                 '[' => self.token(Token_::Open(Delim::Bracket)),
                 ']' => self.token(Token_::Close(Delim::Bracket)),
                 '{' => self.token(Token_::Open(Delim::Brace)),
@@ -158,6 +172,8 @@ pub enum Token_ {
     Close(Delim),
     /// `123`
     Integer,
+    /// `:a`, `:1`
+    Keyword,
     /// Opening delimiter: `(`
     Open(Delim),
     /// `def!`, `let*`
@@ -200,7 +216,7 @@ fn is_part_of_integer(c: char) -> bool {
 /// Is this character a part of a symbol?
 fn is_part_of_symbol(c: char) -> bool {
     match c {
-        '"' | ';' | '\'' | '\\' => false,
+        '"' | ';' | '\'' | '\\' | ':' => false,
         c if is_delim(c) => false,
         c if is_whitespace(c) => false,
         _ => true,

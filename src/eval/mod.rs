@@ -50,6 +50,8 @@ pub enum Value {
     Function(Function),
     /// `123`
     Integer(i64),
+    /// `:a`
+    Keyword(String),
     ///  `nil`
     Nil,
     /// `"Hello, world!"`
@@ -64,6 +66,7 @@ impl fmt::Display for Value {
             Value::Bool(bool) => bool.fmt(f),
             Value::Function(function) => write!(f, "<function at {:?}>", function),
             Value::Integer(integer) => integer.fmt(f),
+            Value::Keyword(ref keyword) => keyword.fmt(f),
             Value::Nil => f.write_str("nil"),
             Value::String(ref string) => string.fmt(f),
             Value::Vector(ref elems) => {
@@ -91,6 +94,7 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
     match expr.node {
         Expr_::Bool(bool) => Ok(Value::Bool(bool)),
         Expr_::Integer(integer) => Ok(Value::Integer(integer)),
+        Expr_::Keyword => Ok(Value::Keyword(String::from_str(&source[expr.span]))),
         Expr_::Operator(_) => {
             // This is a syntax error that gets caught earlier on
             unreachable!()

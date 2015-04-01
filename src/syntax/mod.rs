@@ -15,6 +15,8 @@ pub type Error = Spanned<Error_>;
 pub enum Error_ {
     /// Only a single expression is expected per line. `(+ 1 2) 3` is an error
     ExpectedEndOfLine,
+    /// ':'
+    EmptyKeyword,
     /// `(+ 1 2]`
     IncorrectCloseDelimiter,
     /// The integer literal doesn't fit in 64 bits

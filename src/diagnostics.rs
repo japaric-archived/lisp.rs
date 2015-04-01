@@ -25,6 +25,7 @@ pub fn syntax(error: syntax::Error, source: &Source) -> String {
         use syntax::Error_::*;
 
         match error {
+            EmptyKeyword => string.push_str("empty keyword"),
             ExpectedEndOfLine => string.push_str("expected end of line"),
             IncorrectCloseDelimiter => string.push_str("incorrect close delimiter"),
             IntegerTooLarge => string.push_str("integer literal is too large"),
