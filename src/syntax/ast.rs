@@ -1,15 +1,10 @@
 //! Abstract Syntax Tree
 
-pub mod interner;
-
 use syntax::codemap::Spanned;
+use util::interner::Name;
 
 /// A spanned expression
 pub type Expr = Spanned<Expr_>;
-
-/// An interned symbol
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub struct Symbol(usize);
 
 /// An expression
 #[derive(Debug)]
@@ -19,7 +14,7 @@ pub enum Expr_ {
     /// `123`
     Integer(i64),
     /// `:a`
-    Keyword,
+    Keyword(Name),
     /// `(+ 1 2)`
     List(Vec<Expr>),
     /// `nil`
@@ -29,7 +24,7 @@ pub enum Expr_ {
     /// `"Hello, world!"`
     String,
     /// `+`, `-`
-    Symbol(Symbol),
+    Symbol(Name),
     /// `[1 "two" 3]`
     Vector(Vec<Expr>),
 }

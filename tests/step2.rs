@@ -3,7 +3,7 @@ extern crate lisp;
 mod eval;
 
 use lisp::eval::env;
-use lisp::syntax::ast::interner::Interner;
+use lisp::util::interner::Interner;
 
 #[test]
 fn eq() {

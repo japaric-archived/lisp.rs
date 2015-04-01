@@ -4,11 +4,11 @@ mod lexer;
 
 use std::iter::Peekable;
 
-use syntax::ast::interner::Interner;
 use syntax::ast::{Expr, Expr_};
 use syntax::codemap::{Source, Span, Spanned};
 use syntax::parse::lexer::{Delim, Lexer, Token_};
 use syntax::{Error, Error_};
+use util::interner::Interner;
 
 struct Parser<'a> {
     // NB `Option` needed for option dance
@@ -58,7 +58,14 @@ impl<'a> Parser<'a> {
 
     /// Parses a keyword
     fn keyword(&mut self) -> Result<Expr, Error> {
-        Ok(self.spanned(Expr_::Keyword))
+        // NB option dance
+        let interner = self.interner.take().unwrap();
+
+        let expr = Ok(self.spanned(Expr_::Keyword(interner.intern(&self.source[self.span]))));
+
+        self.interner = Some(interner);
+
+        expr
     }
 
     /// Parses a list

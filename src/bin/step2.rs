@@ -10,9 +10,9 @@ use lisp::diagnostics;
 use lisp::eval::env::{Env, self};
 use lisp::eval::{Value, self};
 use lisp::syntax::ast::Expr;
-use lisp::syntax::ast::interner::Interner;
 use lisp::syntax::codemap::Source;
 use lisp::syntax::{parse, self};
+use lisp::util::interner::Interner;
 
 fn read(source: &Source, interner: &mut Interner) -> Result<Expr, syntax::Error> {
     parse::expr(source, interner)
@@ -22,8 +22,8 @@ fn eval(input: &Expr, source: &Source, env: &mut Env) -> Result<Value, eval::Err
     eval::expr(input, source, env)
 }
 
-fn print(value: &Value, stdout: &mut StdoutLock) -> io::Result<()> {
-    writeln!(stdout, "{}", value)
+fn print(value: &Value, interner: &Interner, stdout: &mut StdoutLock) -> io::Result<()> {
+    writeln!(stdout, "{}", value.display(interner))
 }
 
 fn rep(stdout: &mut StdoutLock) -> io::Result<()> {
@@ -49,7 +49,7 @@ fn rep(stdout: &mut StdoutLock) -> io::Result<()> {
                     Err(error) => {
                         try!(stdout.write_all(diagnostics::eval(error, source).as_bytes()))
                     },
-                    Ok(value) => try!(print(&value, stdout)),
+                    Ok(value) => try!(print(&value, interner, stdout)),
                 },
             }
         }

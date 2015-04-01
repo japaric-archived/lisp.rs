@@ -3,11 +3,15 @@
 #![deny(missing_docs)]
 #![deny(warnings)]
 #![feature(collections)]
+#![feature(convert)]
 #![feature(core)]
 #![feature(slice_patterns)]
 #![feature(unboxed_closures)]
 #![feature(unicode)]
 
+extern crate rc;
+
 pub mod diagnostics;
 pub mod eval;
 pub mod syntax;
+pub mod util;

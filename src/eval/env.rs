@@ -3,11 +3,10 @@
 use std::collections::HashMap;
 
 use eval::Value;
-use syntax::ast::Symbol;
-use syntax::ast::interner::Interner;
+use util::interner::{Interner, Name};
 
 /// Environment
-pub type Env = HashMap<Symbol, Value>;
+pub type Env = HashMap<Name, Value>;
 
 /// The default environment
 pub fn default(interner: &mut Interner) -> Env {

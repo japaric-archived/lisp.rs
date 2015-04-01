@@ -5,6 +5,7 @@ use std::fmt;
 use eval::env::Env;
 use syntax::ast::{Expr, Expr_, Operator};
 use syntax::codemap::{Source, Spanned};
+use util::interner::{Interner, Name};
 
 pub mod env;
 
@@ -51,7 +52,7 @@ pub enum Value {
     /// `123`
     Integer(i64),
     /// `:a`
-    Keyword(String),
+    Keyword(Name),
     ///  `nil`
     Nil,
     /// `"Hello, world!"`
@@ -60,30 +61,45 @@ pub enum Value {
     Vector(Vec<Value>),
 }
 
-impl fmt::Display for Value {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Value {
+    /// Formats this value
+    pub fn display(&self, interner: &Interner) -> String {
+        let mut string = String::new();
+        self.display_(interner, &mut string);
+        string
+    }
+
+    fn display_(&self, interner: &Interner, string: &mut String) {
+        use std::fmt::Write;
+
         match *self {
-            Value::Bool(bool) => bool.fmt(f),
-            Value::Function(function) => write!(f, "<function at {:?}>", function),
-            Value::Integer(integer) => integer.fmt(f),
-            Value::Keyword(ref keyword) => keyword.fmt(f),
-            Value::Nil => f.write_str("nil"),
-            Value::String(ref string) => string.fmt(f),
+            Value::Bool(bool) => {
+                write!(string, "{}", bool).ok();
+            },
+            Value::Function(function) => {
+                write!(string, "<function at {:?}>", function).ok();
+            },
+            Value::Integer(integer) => {
+                write!(string, "{}", integer).ok();
+            },
+            Value::Keyword(ref name) => string.push_str(&interner.get(name)),
+            Value::Nil => string.push_str("nil"),
+            Value::String(ref s) => string.push_str(s),
             Value::Vector(ref elems) => {
-                try!(f.write_str("["));
+                string.push('[');
 
                 let mut is_first = true;
                 for elem in elems {
                     if is_first {
                         is_first = false;
                     } else {
-                        try!(f.write_str(" "))
+                        string.push(' ');
                     }
 
-                    try!(elem.fmt(f))
+                    elem.display_(interner, string)
                 }
 
-                f.write_str("]")
+                string.push(']');
             }
         }
     }
@@ -94,7 +110,7 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
     match expr.node {
         Expr_::Bool(bool) => Ok(Value::Bool(bool)),
         Expr_::Integer(integer) => Ok(Value::Integer(integer)),
-        Expr_::Keyword => Ok(Value::Keyword(String::from_str(&source[expr.span]))),
+        Expr_::Keyword(name) => Ok(Value::Keyword(name)),
         Expr_::Operator(_) => {
             // This is a syntax error that gets caught earlier on
             unreachable!()

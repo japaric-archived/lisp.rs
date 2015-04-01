@@ -21,3 +21,6 @@ test = false
 
 [dependencies.lines]
 git = "https://github.com/japaric/lines.rs"
+
+[dependencies.rc]
+git = "https://github.com/japaric/rc.rs"

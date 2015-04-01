@@ -9,10 +9,10 @@ use std::io::{StdoutLock, Write, self};
 use lines::Lines;
 use lisp::diagnostics;
 use lisp::syntax::ast::Expr;
-use lisp::syntax::ast::interner::Interner;
 use lisp::syntax::codemap::Source;
 use lisp::syntax::pp;
 use lisp::syntax::{Error, parse};
+use lisp::util::interner::Interner;
 
 fn read(source: &Source, interner: &mut Interner) -> Result<Expr, Error> {
     parse::expr(source, interner)

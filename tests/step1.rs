@@ -1,6 +1,6 @@
 extern crate lisp;
 
-use lisp::syntax::ast::interner::Interner;
+use lisp::util::interner::Interner;
 use lisp::syntax::codemap::Source;
 use lisp::syntax::parse;
 use lisp::syntax::pp;
