@@ -34,7 +34,7 @@ impl<'a> Parser<'a> {
         match self.next() {
             None => unreachable!(),
             Some(Ok(Token_::Integer)) => self.integer(),
-            Some(Ok(Token_::Keyword(_))) => Err(self.spanned(Error_::KeywordNotAllowedHere)),
+            Some(Ok(Token_::Operator(_))) => Err(self.spanned(Error_::OperatorNotAllowedHere)),
             Some(Ok(Token_::String)) => self.string(),
             Some(Ok(Token_::Symbol)) => self.symbol(),
             Some(Ok(Token_::Whitespace)) => self.expr(),
@@ -78,8 +78,9 @@ impl<'a> Parser<'a> {
 
     /// Parses a "sequence" until the `close` delimiter is reached
     ///
-    /// if `accept_keyword` is true, then the first element of the sequence can be a keyword
-    fn seq(&mut self, close: Delim, accept_keyword: bool) -> Result<Spanned<Vec<Expr>>, Error> {
+    /// if `accept_operator` is true, then the first element of the sequence can be a special
+    /// operator
+    fn seq(&mut self, close: Delim, accept_operator: bool) -> Result<Spanned<Vec<Expr>>, Error> {
         let lo = self.span.lo;
         let mut exprs = vec![];
 
@@ -106,10 +107,10 @@ impl<'a> Parser<'a> {
                                 return Err(self.spanned(Error_::IncorrectCloseDelimiter))
                             }
                         },
-                        Token_::Keyword(keyword) if accept_keyword && exprs.len() == 0 => {
+                        Token_::Operator(operator) if accept_operator && exprs.len() == 0 => {
                             self.next();
 
-                            exprs.push(self.spanned(Expr_::Keyword(keyword)));
+                            exprs.push(self.spanned(Expr_::Operator(operator)));
                         },
                         Token_::Whitespace => {
                             self.next();

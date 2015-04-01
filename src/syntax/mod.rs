@@ -20,7 +20,7 @@ pub enum Error_ {
     /// The integer literal doesn't fit in 64 bits
     IntegerTooLarge,
     /// `(+ def! 1)`
-    KeywordNotAllowedHere,
+    OperatorNotAllowedHere,
     /// `(+ 1 2`
     UnclosedDelimiter,
     /// `"\a"`

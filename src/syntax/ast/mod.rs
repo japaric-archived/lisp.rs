@@ -18,12 +18,12 @@ pub enum Expr_ {
     Bool(bool),
     /// `123`
     Integer(i64),
-    /// `def!`, `let*`
-    Keyword(Keyword),
     /// `(+ 1 2)`
     List(Vec<Expr>),
     /// `nil`
     Nil,
+    /// `def!`, `let*`
+    Operator(Operator),
     /// `"Hello, world!"`
     String,
     /// `+`, `-`
@@ -33,8 +33,8 @@ pub enum Expr_ {
 }
 
 #[derive(Copy, Debug)]
-/// Special atoms
-pub enum Keyword {
+/// Special operators
+pub enum Operator {
     /// `def!`
     Def,
     /// `if`
@@ -43,13 +43,13 @@ pub enum Keyword {
     Let,
 }
 
-impl Keyword {
-    /// Checks if `str` is a keyword
-    pub fn from_str(str: &str) -> Option<Keyword> {
+impl Operator {
+    /// Checks if `str` is a special operator
+    pub fn from_str(str: &str) -> Option<Operator> {
         match str {
-            "def!" => Some(Keyword::Def),
-            "if" => Some(Keyword::If),
-            "let*" => Some(Keyword::Let),
+            "def!" => Some(Operator::Def),
+            "if" => Some(Operator::If),
+            "let*" => Some(Operator::Let),
             _ => None,
         }
     }

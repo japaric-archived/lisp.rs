@@ -3,7 +3,7 @@
 use std::iter::Peekable;
 use std::str::CharIndices;
 
-use syntax::ast::Keyword;
+use syntax::ast::Operator;
 use syntax::codemap::{BytePos, Source, Span, Spanned};
 use syntax::{Error, Error_};
 
@@ -106,8 +106,8 @@ impl<'a> Lexer<'a> {
 
         self.advance_while(is_part_of_symbol);
 
-        if let Some(keyword) = Keyword::from_str(&self.input[lo..self.next_byte_pos()]) {
-            Ok(self.spanned(lo, Token_::Keyword(keyword)))
+        if let Some(operator) = Operator::from_str(&self.input[lo..self.next_byte_pos()]) {
+            Ok(self.spanned(lo, Token_::Operator(operator)))
         } else {
             Ok(self.spanned(lo, Token_::Symbol))
         }
@@ -158,10 +158,10 @@ pub enum Token_ {
     Close(Delim),
     /// `123`
     Integer,
-    /// `def!`, `let*`
-    Keyword(Keyword),
     /// Opening delimiter: `(`
     Open(Delim),
+    /// `def!`, `let*`
+    Operator(Operator),
     /// `"Hello, world!"`
     String,
     /// `+`, `=`

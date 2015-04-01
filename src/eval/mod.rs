@@ -3,7 +3,7 @@
 use std::fmt;
 
 use eval::env::Env;
-use syntax::ast::{Expr, Expr_, Keyword};
+use syntax::ast::{Expr, Expr_, Operator};
 use syntax::codemap::{Source, Spanned};
 
 pub mod env;
@@ -91,16 +91,16 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
     match expr.node {
         Expr_::Bool(bool) => Ok(Value::Bool(bool)),
         Expr_::Integer(integer) => Ok(Value::Integer(integer)),
-        Expr_::Keyword(_) => {
+        Expr_::Operator(_) => {
             // This is a syntax error that gets caught earlier on
             unreachable!()
         },
         Expr_::List(ref exprs) => match &exprs[..] {
             [] => Err(Spanned::new(expr.span, Error_::EmptyList)),
             [ref head, tail..] => match head.node {
-                Expr_::Keyword(keyword) => {
-                    match keyword {
-                        Keyword::Def => {
+                Expr_::Operator(operator) => {
+                    match operator {
+                        Operator::Def => {
                             if let [ref symbol, ref expr] = tail {
                                 if let Expr_::Symbol(symbol) = symbol.node {
                                     let value = try!(::eval::expr(expr, source, env));
@@ -115,7 +115,7 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
                                 Err(Spanned::new(expr.span, Error_::UnsupportedOperation))
                             }
                         },
-                        Keyword::If => {
+                        Operator::If => {
                             if let [ref cond, ref then, ref els] = tail {
                                 if match try!(::eval::expr(cond, source, env)) {
                                     Value::Bool(false) | Value::Nil => false,
