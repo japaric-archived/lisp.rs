@@ -18,7 +18,7 @@ $ target/release/step2
 > (def! x 3)
 3
 > (def! x 4)
-3
+4
 > x
 4
 > (let* [p (+ 2 3) q (+ 2 p)] (+ p q))
