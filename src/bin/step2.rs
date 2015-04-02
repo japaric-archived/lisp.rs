@@ -7,7 +7,7 @@ use std::io::{StdoutLock, Write, self};
 
 use lines::Lines;
 use lisp::diagnostics;
-use lisp::eval::env::{Env, self};
+use lisp::eval::env::{Stack, self};
 use lisp::eval::{Value, self};
 use lisp::syntax::ast::Expr;
 use lisp::syntax::codemap::Source;
@@ -18,7 +18,7 @@ fn read(source: &Source, interner: &mut Interner) -> Result<Expr, syntax::Error>
     parse::expr(source, interner)
 }
 
-fn eval(input: &Expr, source: &Source, env: &mut Env) -> Result<Value, eval::Error> {
+fn eval(input: &Expr, source: &Source, env: &mut Stack) -> Result<Value, eval::Error> {
     eval::expr(input, source, env)
 }
 
@@ -33,7 +33,7 @@ fn rep(stdout: &mut StdoutLock) -> io::Result<()> {
     let mut lines = Lines::from(stdin.lock());
 
     let ref mut interner = Interner::new();
-    let mut env = env::default(interner);
+    let ref mut env = env::default(interner);
 
     try!(stdout.write_all(PROMPT.as_bytes()));
     try!(stdout.flush());
@@ -45,7 +45,7 @@ fn rep(stdout: &mut StdoutLock) -> io::Result<()> {
                 Err(error) => {
                     try!(stdout.write_all(diagnostics::syntax(error, source).as_bytes()))
                 },
-                Ok(expr) => match eval(&expr, source, &mut env) {
+                Ok(expr) => match eval(&expr, source, env) {
                     Err(error) => {
                         try!(stdout.write_all(diagnostics::eval(error, source).as_bytes()))
                     },

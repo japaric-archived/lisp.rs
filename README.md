@@ -6,7 +6,7 @@ A lisp interpreter written in rust. See [Make-A-Lisp].
 
 [Make-A-Lisp]: https://github.com/kanaka/mal
 
-Status: step 2 completed
+Status: step 3 completed
 
 ```
 $ cargo build --release
@@ -15,14 +15,18 @@ $ target/release/step2
 3
 > (+ 5 (* 2 3))
 11
-> (abc 1 2)
+> (def! x 3)
+3
+> (def! x 4)
+3
+> x
+4
+> (let* [p (+ 2 3) q (+ 2 p)] (+ p q))
+12
+> p
 error: undefined symbol
-(abc 1 2)
- ^~~
-> (1 2 3)
-error: expected symbol
-(1 2 3)
- ^
+p
+^
 ```
 
 # [Documentation][docs]

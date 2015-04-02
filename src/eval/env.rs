@@ -5,11 +5,40 @@ use std::collections::HashMap;
 use eval::Value;
 use util::interner::{Interner, Name};
 
+/// A stack of environments
+pub struct Stack<'a> {
+    top: Env,
+    bottom: Option<&'a Stack<'a>>,
+}
+
+impl<'a> Stack<'a> {
+    /// Pushes a new environment into the stack
+    pub fn push(&self, env: Env) -> Stack {
+        Stack {
+            top: env,
+            bottom: Some(self),
+        }
+    }
+
+    /// Searches the stack (from top to bottom) and retrieves the first value that's associated to
+    /// `symbol`
+    pub fn get(&self, symbol: &Name) -> Option<&Value> {
+        self.top.get(symbol).or_else(|| {
+            self.bottom.as_ref().and_then(|stack| stack.get(symbol))
+        })
+    }
+
+    /// Inserts a `symbol`/`value` pair in the top environment
+    pub fn insert(&mut self, symbol: Name, value: Value) {
+        self.top.insert(symbol, value);
+    }
+}
+
 /// Environment
 pub type Env = HashMap<Name, Value>;
 
-/// The default environment
-pub fn default(interner: &mut Interner) -> Env {
+/// The default environment stack
+pub fn default(interner: &mut Interner) -> Stack<'static> {
     let mut env = Env::new();
 
     env.insert(interner.intern("*"), Value::Function(mul));
@@ -21,7 +50,10 @@ pub fn default(interner: &mut Interner) -> Env {
     env.insert(interner.intern(">"), Value::Function(gt));
     env.insert(interner.intern(">="), Value::Function(ge));
 
-    env
+    Stack {
+        top: env,
+        bottom: None,
+    }
 }
 
 fn add(args: &[Value]) -> Option<Value> {

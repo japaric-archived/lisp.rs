@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use eval::env::Env;
+use eval::env::{Env, Stack};
 use syntax::ast::{Expr, Expr_, Operator};
 use syntax::codemap::{Source, Spanned};
 use util::interner::{Interner, Name};
@@ -106,7 +106,13 @@ impl Value {
 }
 
 /// Evaluates an expression
-pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error> {
+pub fn expr(expr: &Expr, source: &Source, env: &mut Stack) -> Result<Value, Error> {
+    macro_rules! err {
+        ($span:expr, $err:ident) => {
+            Err(Spanned::new($span.span, Error_::$err))
+        }
+    }
+
     match expr.node {
         Expr_::Bool(bool) => Ok(Value::Bool(bool)),
         Expr_::Integer(integer) => Ok(Value::Integer(integer)),
@@ -116,7 +122,7 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
             unreachable!()
         },
         Expr_::List(ref exprs) => match &exprs[..] {
-            [] => Err(Spanned::new(expr.span, Error_::EmptyList)),
+            [] => err!(expr, EmptyList),
             [ref head, tail..] => match head.node {
                 Expr_::Operator(operator) => {
                     match operator {
@@ -129,10 +135,10 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
 
                                     Ok(value)
                                 } else {
-                                    Err(Spanned::new(symbol.span, Error_::ExpectedSymbol))
+                                    err!(symbol, ExpectedSymbol)
                                 }
                             } else {
-                                Err(Spanned::new(expr.span, Error_::UnsupportedOperation))
+                                err!(expr, UnsupportedOperation)
                             }
                         },
                         Operator::If => {
@@ -146,10 +152,43 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
                                     ::eval::expr(els, source, env)
                                 }
                             } else {
-                                Err(Spanned::new(expr.span, Error_::UnsupportedOperation))
+                                err!(expr, UnsupportedOperation)
                             }
                         },
-                        _ => unimplemented!(),
+                        Operator::Let => {
+                            if let [ref list, ref ret] = tail {
+                                match list.node {
+                                    Expr_::List(ref bindings) | Expr_::Vector(ref bindings) => {
+                                        if bindings.len() % 2 != 0 {
+                                            return err!(expr, UnsupportedOperation)
+                                        }
+
+                                        let ref mut env = env.push(Env::new());
+
+                                        for binding in bindings.chunks(2) {
+                                            if let [ref symbol, ref expr] = binding {
+                                                if let Expr_::Symbol(symbol) = symbol.node {
+                                                    let value = ::eval::expr(expr, source, env);
+
+                                                    env.insert(symbol, try!(value))
+                                                } else {
+                                                    return err!(symbol, ExpectedSymbol)
+                                                }
+                                            } else {
+                                                // NB because bindings.len() is an even number
+                                                unreachable!();
+                                            }
+                                        }
+
+                                        ::eval::expr(ret, source, env)
+                                    },
+                                    _ => err!(expr, UnsupportedOperation),
+
+                                }
+                            } else {
+                                err!(expr, UnsupportedOperation)
+                            }
+                        },
                     }
                 },
                 Expr_::Symbol(ref symbol) => {
@@ -165,18 +204,17 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
                                 if let Some(value) = function(&args) {
                                     Ok(value)
                                 } else {
-                                    Err(Spanned::new(expr.span, Error_::UnsupportedOperation))
+                                    err!(expr, UnsupportedOperation)
                                 }
                             },
-                            _ => {
-                                Err(Spanned::new(head.span, Error_::ExpectedFunction))
-                            }
+                            _ => err!(head, ExpectedFunction),
+
                         }
                     } else {
-                        Err(Spanned::new(head.span, Error_::UndefinedSymbol))
+                        err!(head, UndefinedSymbol)
                     }
                 },
-                _ => Err(Spanned::new(head.span, Error_::ExpectedSymbol)),
+                _ => err!(head, ExpectedSymbol)
             },
         },
         Expr_::Nil => Ok(Value::Nil),
@@ -185,7 +223,7 @@ pub fn expr(expr: &Expr, source: &Source, env: &mut Env) -> Result<Value, Error>
             if let Some(value) = env.get(symbol) {
                 Ok(value.clone())
             } else {
-                Err(Spanned::new(expr.span, Error_::UndefinedSymbol))
+                err!(expr, UndefinedSymbol)
             }
         },
         Expr_::Vector(ref exprs) => {
