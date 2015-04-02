@@ -3,7 +3,6 @@
 #![deny(missing_docs)]
 #![deny(warnings)]
 #![feature(collections)]
-#![feature(convert)]
 #![feature(core)]
 #![feature(slice_patterns)]
 #![feature(unboxed_closures)]

@@ -1,6 +1,9 @@
 //! Evaluation
 
 use std::fmt;
+use std::ops::Deref;
+
+use rc::Rc;
 
 use eval::env::{Env, Stack};
 use syntax::ast::{Expr, Expr_, Operator};
@@ -12,18 +15,35 @@ pub mod env;
 /// Spanned error
 pub type Error = Spanned<Error_>;
 
-/// A built-in function
-pub type Function = fn(&[Value]) -> Option<Value>;
+/// A built-in function or a user defined lambda
+#[derive(Clone)]
+pub struct Function(Rc<Fn(&[Value]) -> Option<Value>>);
 
-impl Clone for Function {
-    fn clone(&self) -> Function {
-        *self
+impl Function {
+    fn new<F>(f: F) -> Function where F: Fn(&[Value]) -> Option<Value> + 'static {
+        let boxed_f: Box<Fn(&[Value]) -> Option<Value>> = Box::new(f);
+        Function(Rc::from(boxed_f))
     }
 }
 
 impl fmt::Debug for Function {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Debug::fmt(&(*self as *const ()), f)
+        use std::mem;
+        use std::raw::TraitObject;
+
+        let TraitObject { data, .. } = unsafe {
+            mem::transmute(self.0.deref())
+        };
+
+        data.fmt(f)
+    }
+}
+
+impl Deref for Function {
+    type Target = Fn(&[Value]) -> Option<Value> + 'static;
+
+    fn deref(&self) -> &(Fn(&[Value]) -> Option<Value> + 'static) {
+        self.0.deref()
     }
 }
 
@@ -76,7 +96,7 @@ impl Value {
             Value::Bool(bool) => {
                 write!(string, "{}", bool).ok();
             },
-            Value::Function(function) => {
+            Value::Function(ref function) => {
                 write!(string, "<function at {:?}>", function).ok();
             },
             Value::Integer(integer) => {

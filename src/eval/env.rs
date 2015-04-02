@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use eval::Value;
+use eval::{Function, Value};
 use util::interner::{Interner, Name};
 
 /// A stack of environments
@@ -41,14 +41,14 @@ pub type Env = HashMap<Name, Value>;
 pub fn default(interner: &mut Interner) -> Stack<'static> {
     let mut env = Env::new();
 
-    env.insert(interner.intern("*"), Value::Function(mul));
-    env.insert(interner.intern("+"), Value::Function(add));
-    env.insert(interner.intern("-"), Value::Function(sub));
-    env.insert(interner.intern("/"), Value::Function(div));
-    env.insert(interner.intern("<"), Value::Function(lt));
-    env.insert(interner.intern("<="), Value::Function(le));
-    env.insert(interner.intern(">"), Value::Function(gt));
-    env.insert(interner.intern(">="), Value::Function(ge));
+    env.insert(interner.intern("*"), Value::Function(Function::new(mul)));
+    env.insert(interner.intern("+"), Value::Function(Function::new(add)));
+    env.insert(interner.intern("-"), Value::Function(Function::new(sub)));
+    env.insert(interner.intern("/"), Value::Function(Function::new(div)));
+    env.insert(interner.intern("<"), Value::Function(Function::new(lt)));
+    env.insert(interner.intern("<="), Value::Function(Function::new(le)));
+    env.insert(interner.intern(">"), Value::Function(Function::new(gt)));
+    env.insert(interner.intern(">="), Value::Function(Function::new(ge)));
 
     Stack {
         top: env,
