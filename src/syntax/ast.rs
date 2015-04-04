@@ -29,7 +29,7 @@ pub enum Expr_ {
     Vector(Vec<Expr>),
 }
 
-#[derive(Copy, Debug)]
+#[derive(Clone, Copy, Debug)]
 /// Special operators
 pub enum Operator {
     /// `def!`

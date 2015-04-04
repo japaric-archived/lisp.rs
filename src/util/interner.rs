@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use rc::Rc;
 
 /// An interned string
-#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Name(usize);
 
 /// A string interner

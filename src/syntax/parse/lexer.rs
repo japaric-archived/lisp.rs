@@ -166,7 +166,7 @@ impl<'a> Iterator for Lexer<'a> {
 pub type Token = Spanned<Token_>;
 
 /// Tokens
-#[derive(Copy, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Token_ {
     /// Closing delimiter: `]`
     Close(Delim),
@@ -187,7 +187,7 @@ pub enum Token_ {
 }
 
 /// Delimiters
-#[derive(Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Delim {
     /// `{}`
     Brace,

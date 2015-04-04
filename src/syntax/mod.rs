@@ -11,7 +11,7 @@ use syntax::codemap::Spanned;
 pub type Error = Spanned<Error_>;
 
 /// Syntax error
-#[derive(Copy, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Error_ {
     /// Only a single expression is expected per line. `(+ 1 2) 3` is an error
     ExpectedEndOfLine,

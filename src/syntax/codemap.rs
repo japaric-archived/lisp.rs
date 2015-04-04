@@ -34,7 +34,7 @@ impl Index<Span> for Source {
 }
 
 /// Source code span
-#[derive(Copy, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Span {
     /// Start of the span
     pub lo: BytePos,
@@ -63,7 +63,7 @@ impl Span {
 }
 
 /// A spanned node
-#[derive(Copy, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Spanned<T> {
     /// The node
     pub node: T,
