@@ -1,5 +1,7 @@
 //! Diagnostics
 
+use unicode_width::UnicodeWidthStr;
+
 use eval;
 use syntax::codemap::{Source, Spanned};
 use syntax;
@@ -53,16 +55,14 @@ fn common<E, F>(error: Spanned<E>, source: &Source, f: F) -> String where
     string.push_str(source.as_str());
     string.push('\n');
 
-    let is_cjk = false;
-
-    for _ in 0..source.as_str()[..error.span.lo].width(is_cjk) {
+    for _ in 0..UnicodeWidthStr::width(&source.as_str()[..error.span.lo]) {
         string.push(' ');
     }
 
     string.push('^');
 
     if error.span.hi <= source.as_str().len() {
-        for _ in 1..source[error.span].width(is_cjk) {
+        for _ in 1..UnicodeWidthStr::width(&source[error.span]) {
             string.push('~');
         }
     }

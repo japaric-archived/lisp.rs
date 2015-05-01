@@ -6,9 +6,9 @@
 #![feature(core)]
 #![feature(slice_patterns)]
 #![feature(unboxed_closures)]
-#![feature(unicode)]
 
 extern crate rc;
+extern crate unicode_width;
 
 pub mod diagnostics;
 pub mod eval;

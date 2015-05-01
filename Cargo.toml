@@ -19,6 +19,9 @@ name = "step2"
 path = "src/bin/step2.rs"
 test = false
 
+[dependencies]
+unicode-width = "*"
+
 [dependencies.lines]
 git = "https://github.com/japaric/lines.rs"
 
