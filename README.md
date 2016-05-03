@@ -1,3 +1,12 @@
+# Status
+
+This project is **INACTIVE** as I'm currently busy working on other projects. I might come back to
+this in the future.
+
+-- @japaric, 2016-05-02
+
+---
+
 [![Build Status][status]](https://travis-ci.org/japaric/lisp.rs)
 
 # `lisp.rs`
